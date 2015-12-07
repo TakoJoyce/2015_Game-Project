@@ -1,7 +1,5 @@
-Library/
-library/
-Temp/
-temp/
+[Ll]ibrary/
+[Tt]emp/
 [Oo]bj/
 [Bb]uild/
 
