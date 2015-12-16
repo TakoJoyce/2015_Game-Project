@@ -27,18 +27,18 @@ public class PlayerController : MonoBehaviour
 
     //misc
     public LayerMask groundMask;
-    
+
 
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
 
-        isGroundedId    = Animator.StringToHash("isGrounded");
-        hVeloId         = Animator.StringToHash("hVelo");
-        vSpeedId        = Animator.StringToHash("vSpeed");
-        triggerJumpId   = Animator.StringToHash("triggerJump");
-        twinkleId       = Animator.StringToHash("twinkle");
+        isGroundedId = Animator.StringToHash("isGrounded");
+        hVeloId = Animator.StringToHash("hVelo");
+        vSpeedId = Animator.StringToHash("vSpeed");
+        triggerJumpId = Animator.StringToHash("triggerJump");
+        twinkleId = Animator.StringToHash("twinkle");
 
         facingRight = true;
         isGrounded = false;
@@ -49,21 +49,21 @@ public class PlayerController : MonoBehaviour
         //Move
         GroundCheck();
 
-		float horizSpeed = input.GetMoveAxis() * walkSpeed;
+        float horizSpeed = input.GetMoveAxis() * walkSpeed;
         if ((facingRight && horizSpeed < 0) || (!facingRight && horizSpeed > 0))
         {
             facingRight = !facingRight;
             Flip();
         }
         rb.velocity = new Vector2(horizSpeed, rb.velocity.y);
-		//更新動畫
+        //更新動畫
         anim.SetFloat(hVeloId, Mathf.Abs(rb.velocity.x));
         anim.SetFloat(vSpeedId, rb.velocity.y);
         //Jump
         if (isGrounded && input.jump)
         {
             anim.SetTrigger(triggerJumpId);
-			StartCoroutine(JumpCoroutine());
+            StartCoroutine("JumpCoroutine");
         }
     }
 
@@ -95,24 +95,30 @@ public class PlayerController : MonoBehaviour
                 checkPoint = c.transform;
                 break;
             case "KillZone":
-                Kill();
                 break;
         }
+    }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("KillZone"))
+            Kill();
     }
 
     void Kill()
     {
         Vector3 rebirthPos = checkPoint.position;
         transform.position = rebirthPos;
+        rb.velocity = Vector2.zero;
         anim.SetTrigger(twinkleId);
     }
 
     void GroundCheck()
     {
         RaycastHit2D hit = Physics2D.Linecast(transform.position, groundCheck.position, groundMask);
-        if  (hit)
+        if (hit)
         {
-			isGrounded = !(hit.collider.isTrigger);
+            isGrounded = !hit.collider.isTrigger;
         }
         else
         {
@@ -122,3 +128,4 @@ public class PlayerController : MonoBehaviour
         anim.SetBool(isGroundedId, isGrounded);
     }
 }
+    

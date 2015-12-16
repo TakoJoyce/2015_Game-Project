@@ -1,14 +1,17 @@
 fileFormatVersion: 2
-guid: d16f3115883d4104685cae870c2e3108
-timeCreated: 1448712671
+guid: 3e523c149df12a84698e2319cca57910
+timeCreated: 1450017926
 licenseType: Free
 TextureImporter:
   fileIDToRecycleName:
-    21300000: rgb_slice 1_0
-    21300002: rgb_slice 1_1
-    21300004: rgb_slice 1_2
-    21300006: rgb_slice 1_3
-    21300008: rgb_slice 1_4
+    21300000: barrier_0
+    21300002: barrier_1
+    21300004: barrier_2
+    21300006: barrier_3
+    21300008: barrier_4
+    21300010: barrier_5
+    21300012: barrier_6
+    21300014: barrier_7
   serializedVersion: 2
   mipmaps:
     mipMapMode: 0
@@ -55,53 +58,83 @@ TextureImporter:
   buildTargetSettings: []
   spriteSheet:
     sprites:
-    - name: rgb_slice 1_0
+    - name: barrier_0
       rect:
         serializedVersion: 2
-        x: 174
-        y: 373
-        width: 151
-        height: 91
+        x: 0
+        y: 297
+        width: 127
+        height: 212
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
-    - name: rgb_slice 1_1
+    - name: barrier_1
       rect:
         serializedVersion: 2
-        x: 24
-        y: 138
-        width: 115
-        height: 144
+        x: 256
+        y: 297
+        width: 127
+        height: 212
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
-    - name: rgb_slice 1_2
+    - name: barrier_2
       rect:
         serializedVersion: 2
-        x: 138
-        y: 139
-        width: 235
-        height: 233
+        x: 512
+        y: 299
+        width: 127
+        height: 213
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
-    - name: rgb_slice 1_3
+    - name: barrier_3
       rect:
         serializedVersion: 2
-        x: 373
-        y: 138
-        width: 115
-        height: 141
+        x: 768
+        y: 297
+        width: 127
+        height: 212
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
-    - name: rgb_slice 1_4
+    - name: barrier_4
       rect:
         serializedVersion: 2
-        x: 218
-        y: 53
-        width: 70
-        height: 61
+        x: 0
+        y: 41
+        width: 127
+        height: 212
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: barrier_5
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 43
+        width: 127
+        height: 213
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: barrier_6
+      rect:
+        serializedVersion: 2
+        x: 512
+        y: 41
+        width: 127
+        height: 212
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+    - name: barrier_7
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 41
+        width: 127
+        height: 212
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}

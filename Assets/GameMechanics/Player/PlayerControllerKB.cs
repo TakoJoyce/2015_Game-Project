@@ -27,7 +27,7 @@ public class PlayerControllerKB : MonoBehaviour
 
     //misc
     public LayerMask groundMask;
-    
+
 
     void Awake()
     {
@@ -94,15 +94,21 @@ public class PlayerControllerKB : MonoBehaviour
                 checkPoint = c.transform;
                 break;
             case "KillZone":
-                Kill();
                 break;
         }
+    }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("KillZone"))
+            Kill();
     }
 
     void Kill()
     {
         Vector3 rebirthPos = checkPoint.position;
         transform.position = rebirthPos;
+        rb.velocity = Vector2.zero;
         anim.SetTrigger(twinkleId);
     }
 
