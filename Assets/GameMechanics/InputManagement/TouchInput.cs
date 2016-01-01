@@ -34,6 +34,12 @@ public class TouchInput : MonoBehaviour
             hitInfo = Physics2D.Linecast(castPoint, castPoint);
             if (hitInfo)
             {
+                if (touch.phase == TouchPhase.Began)
+                {
+                    TouchEvent te = hitInfo.transform.GetComponent<TouchEvent>();
+                    if (te) te.OnTouch();
+                }
+
                 int id = hitInfo.collider.GetHashCode();
                 if (id == dPadUpId)
                     dPadUp = true;

@@ -3,22 +3,32 @@ using System.Collections;
 
 public class PlayerController : MonoBehaviour
 {
+    Collider2D[] col;
     Rigidbody2D rb;
     Animator anim;
+    AudioSource jumpSE;
     public Transform groundCheck;
     public TouchInput input;
+    public PrismController prismCon;
+    public StageControl stageCon;
+    public PlayerCamera playerCam;
+    public ParticleSystem particle;
+    public AudioClip dieSE;
 
     //animator parameter Id
     static int isGroundedId;
     static int hVeloId;
     static int vSpeedId;
     static int triggerJumpId;
-    static int twinkleId;
+    static int dieId;
+    static int rebirthId;
 
     //player status
     public bool facingRight { private set; get; }
     public bool isGrounded { private set; get; }
-    Transform checkPoint;
+    public Transform checkPoint;
+    public bool iscontrollable = true;
+    bool blockForward = false;
 
     //character configuration
     public float walkSpeed = 8.0f;
@@ -31,14 +41,17 @@ public class PlayerController : MonoBehaviour
 
     void Awake()
     {
+        col = GetComponents<Collider2D>();
         rb = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+        jumpSE = GetComponent<AudioSource>();
 
         isGroundedId = Animator.StringToHash("isGrounded");
         hVeloId = Animator.StringToHash("hVelo");
         vSpeedId = Animator.StringToHash("vSpeed");
         triggerJumpId = Animator.StringToHash("triggerJump");
-        twinkleId = Animator.StringToHash("twinkle");
+        dieId = Animator.StringToHash("die");
+        rebirthId = Animator.StringToHash("rebirth");
 
         facingRight = true;
         isGrounded = false;
@@ -49,22 +62,32 @@ public class PlayerController : MonoBehaviour
         //Move
         GroundCheck();
 
-        float horizSpeed = input.GetMoveAxis() * walkSpeed;
+        
+        float horizSpeed = iscontrollable ? input.GetMoveAxis() * walkSpeed : 0;
         if ((facingRight && horizSpeed < 0) || (!facingRight && horizSpeed > 0))
         {
             facingRight = !facingRight;
             Flip();
         }
+        
+        if (blockForward)
+            if (facingRight && horizSpeed > 0.0f || !facingRight && horizSpeed < 0.0f)
+                horizSpeed = 0.0f;
+
         rb.velocity = new Vector2(horizSpeed, rb.velocity.y);
-        //更新動畫
-        anim.SetFloat(hVeloId, Mathf.Abs(rb.velocity.x));
-        anim.SetFloat(vSpeedId, rb.velocity.y);
+
         //Jump
-        if (isGrounded && input.jump)
+        if (isGrounded && iscontrollable && input.jump)
         {
             anim.SetTrigger(triggerJumpId);
             StartCoroutine("JumpCoroutine");
+            jumpSE.Play();
         }
+
+        //更新動畫
+        anim.SetFloat(hVeloId, Mathf.Abs(rb.velocity.x));
+        anim.SetFloat(vSpeedId, rb.velocity.y);
+        
     }
 
     void Flip()
@@ -78,7 +101,7 @@ public class PlayerController : MonoBehaviour
     {
         float timer = 0.0f;
 
-        while (timer < maxJumpTime && input.jump)
+        while (timer < maxJumpTime && input.jump && iscontrollable)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpSpeed);
 
@@ -87,16 +110,21 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void OnTriggerEnter2D(Collider2D c)
+    void FixedUpdate()
     {
-        switch (c.tag)
-        {
-            case "CheckPoint":
-                checkPoint = c.transform;
-                break;
-            case "KillZone":
-                break;
-        }
+        blockForward = false;
+    }
+
+    void OnTriggerStay2D(Collider2D c)
+    {
+        if ((1 << c.gameObject.layer & groundMask.value) != 0 && !isGrounded && !c.isTrigger)
+            blockForward = true;
+    }
+
+    void OnTriggerExit2D(Collider2D c)
+    {
+        if ((1 << c.gameObject.layer & groundMask.value) != 0 && !c.isTrigger)
+            blockForward = false;
     }
 
     void OnCollisionEnter2D(Collision2D collision)
@@ -105,24 +133,62 @@ public class PlayerController : MonoBehaviour
             Kill();
     }
 
-    void Kill()
+    public void Kill()
     {
-        Vector3 rebirthPos = checkPoint.position;
-        transform.position = rebirthPos;
+        if (!iscontrollable)
+            return;
+
+        particle.Play();
+        jumpSE.PlayOneShot(dieSE);
+        iscontrollable = false;
+        foreach (Collider2D c in col)
+            c.enabled = false;
         rb.velocity = Vector2.zero;
-        anim.SetTrigger(twinkleId);
+        rb.isKinematic = true;
+        anim.SetTrigger(dieId);
+        if (prismCon.currerntMode != MagicColor.White)
+            prismCon.ClosePrism();
+    }
+
+    public void Rebirth()
+    {
+        StartCoroutine(RebirthCoroutine());
+    }
+
+    IEnumerator RebirthCoroutine()
+    {
+        stageCon.StartCoroutine(stageCon.FadeOutScreen());
+        while (stageCon.isInTransition) yield return null;
+
+        anim.StopPlayback();
+        transform.position = checkPoint.position;
+        if (transform.localScale.x != 1)
+        {
+            facingRight = true;
+            Flip();
+        }
+        playerCam.AimImmediately();
+        iscontrollable = true;
+        foreach (Collider2D c in col)
+            c.enabled = true;
+        rb.isKinematic = false;
+        anim.SetTrigger(rebirthId);
+        stageCon.ResetStage();
+
+        stageCon.StartCoroutine(stageCon.FadeInScreen());
     }
 
     void GroundCheck()
     {
-        RaycastHit2D hit = Physics2D.Linecast(transform.position, groundCheck.position, groundMask);
-        if (hit)
+        isGrounded = false;
+        RaycastHit2D[] hits = Physics2D.LinecastAll(transform.position, groundCheck.position, groundMask);
+        for (int i = 0; i < hits.Length; i++)
         {
-            isGrounded = !hit.collider.isTrigger;
-        }
-        else
-        {
-            isGrounded = false;
+            if (!hits[i].collider.isTrigger)
+            {
+                isGrounded = !hits[i].collider.isTrigger;
+                break;
+            }
         }
 
         anim.SetBool(isGroundedId, isGrounded);

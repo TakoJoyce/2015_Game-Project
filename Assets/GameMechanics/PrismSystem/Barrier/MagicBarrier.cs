@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class MagicBarrier : MagicObject
 {
@@ -41,7 +40,7 @@ public class MagicBarrier : MagicObject
         spriteRenderer.enabled = false;
         //make it not interactable
         gameObject.layer = LayerMask.NameToLayer("MagicObject_NotInteractable");
-        col.isTrigger = true;
+        col.enabled = false;
     }
 
     public override void BecomeInteractable()
@@ -52,6 +51,6 @@ public class MagicBarrier : MagicObject
         spriteRenderer.enabled = true;
 
         gameObject.layer = LayerMask.NameToLayer("MagicObject");
-        col.isTrigger = false;
+        col.enabled = true;
     }
 }

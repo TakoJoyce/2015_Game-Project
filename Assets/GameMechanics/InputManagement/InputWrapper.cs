@@ -3,7 +3,6 @@
 
 public class InputWrapper : MonoBehaviour
 {
-#if UNITY_EDITOR
     public TouchInput touchInput;
 
     void Update()
@@ -16,6 +15,5 @@ public class InputWrapper : MonoBehaviour
         if (Input.GetButton("Jump"))
             touchInput.jump = true;
     }
-
-#endif
+    
 }

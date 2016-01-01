@@ -20,7 +20,7 @@ public class MagicBox : MagicObject
     public override void OnPrismChange(MagicColor mode)
     {
         base.OnPrismChange(mode);
-        //指定分離出來的物體的速度，因為我發現Instantiate複製出來的物體，在物理引琴李面的速度不會保留，所以要重新指定。
+        //指定分離出來的物體的速度，因為我發現Instantiate複製出來的物體，在物理引擎裡面的速度不會保留，所以要重新指定。
         if (detachedObj != null)
           detachedObj.GetComponent<Rigidbody2D>().velocity = rb.velocity;
     }

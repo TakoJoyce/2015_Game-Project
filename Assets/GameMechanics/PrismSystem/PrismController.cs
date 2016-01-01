@@ -3,7 +3,12 @@ using System.Collections.Generic;
 
 public class PrismController : MonoBehaviour
 {
-    //public UnityStandardAssets.ImageEffects.ScreenOverlay screenOverlay;
+    public PlayerController player;
+    public PlayerCamera playerCam;
+    BoxCollider2D playerBoxCol;
+    CircleCollider2D playerCircleCol;
+    AudioSource transSE;
+
     public UnityEngine.UI.Button redButton, greenButton, blueButton, whiteButton;
     
     public Animator swapAnim;
@@ -15,7 +20,12 @@ public class PrismController : MonoBehaviour
 
     void Awake()
     {
-		redButton.onClick.AddListener(delegate { ChangeTo(MagicColor.Red); });
+        playerBoxCol = player.GetComponent<BoxCollider2D>();
+        playerCircleCol = player.GetComponent<CircleCollider2D>();
+        transSE = GetComponent<AudioSource>();
+
+        //button delegate
+        redButton.onClick.AddListener(delegate { ChangeTo(MagicColor.Red); });
         greenButton.onClick.AddListener(delegate { ChangeTo(MagicColor.Green); });
         blueButton.onClick.AddListener(delegate { ChangeTo(MagicColor.Blue); });
         whiteButton.onClick.AddListener(delegate { ClosePrism(); });
@@ -33,6 +43,11 @@ public class PrismController : MonoBehaviour
 
     public void ChangeTo(MagicColor mode)
     {
+        if (currerntMode == mode)
+            return;
+
+        transSE.Play();
+
         foreach (MagicObject mo in magicObjectList)
         {
             mo.OnPrismChange(mode);
@@ -42,31 +57,36 @@ public class PrismController : MonoBehaviour
         {
             case MagicColor.Red:
                 swapAnim.SetTrigger(toRedId);
-                //screenOverlay.texture = Resources.Load<Texture2D>("RedCover");
                 break;
             case MagicColor.Green:
                 swapAnim.SetTrigger(toGreenId);
-                //screenOverlay.texture = Resources.Load<Texture2D>("GreenCover");
                 break;
             case MagicColor.Blue:
                 swapAnim.SetTrigger(toBlueId);
-               // screenOverlay.texture = Resources.Load<Texture2D>("BlueCover");
                 break;
         }
-        //Resources.UnloadUnusedAssets();
-
+        PushPlayer();
+        if (playerCam.state == CameraState.Normal)
+            playerCam.FixByPrism(playerCam.transform.position);
         currerntMode = mode;
     }
 
     public void ClosePrism()
     {
+        if (currerntMode == MagicColor.White)
+            return;
+
+        transSE.Play();
+
         currerntMode = MagicColor.White;
-        //screenOverlay.texture = null;
         swapAnim.SetTrigger(toWhiteId);
         foreach (MagicObject mo in magicObjectList)
         {
             mo.OnPrismClose();
         }
+        if (playerCam.state == CameraState.FixedByPrism)
+            playerCam.ReleaseCam();
+        PushPlayer();
     }
 
     public void RegisterMagicObject(MagicObject mo)
@@ -77,5 +97,20 @@ public class PrismController : MonoBehaviour
     public void DeregisterMagicObject(MagicObject mo)
     {
         magicObjectList.Remove(mo);
+    }
+
+    void PushPlayer()
+    {
+        float detectStartY = player.transform.position.y + playerBoxCol.size.y * 0.5f + playerBoxCol.offset.y;
+        Vector2 detectStart = new Vector2(player.transform.position.x, detectStartY);
+        float detectEndY = player.transform.position.y - playerCircleCol.radius + playerCircleCol.offset.y;
+        Vector2 detectEnd = new Vector2(player.transform.position.x, detectEndY);
+        RaycastHit2D hit =  Physics2D.Linecast(detectStart, detectEnd, 1 << LayerMask.NameToLayer("MagicObject"));
+
+        if (hit && !hit.collider.isTrigger)
+        {
+            Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
+            rb.position = new Vector2(rb.position.x, rb.position.y + Vector3.Distance(detectStart, detectEnd) - hit.distance);
+        }
     }
 }

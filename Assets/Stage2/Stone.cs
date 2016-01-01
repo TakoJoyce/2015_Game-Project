@@ -1,18 +1,33 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Stone : MonoBehaviour {
+public class Stone : MonoBehaviour
+{
 
-    bool hasBeenSeen = false;
-	
-	void OnBecameVisible()
+    bool isVisible = true;
+    
+    void Awake()
     {
-        hasBeenSeen = true;
+        StartCoroutine(TryToDestroy());
     }
 
+    void OnBecameVisible()
+    {
+        isVisible = true;
+    }
+    
     void OnBecameInvisible()
     {
-        if (hasBeenSeen)
-            Destroy(gameObject);
+        isVisible = false;
+    }
+
+    IEnumerator TryToDestroy()
+    {
+        yield return new WaitForSeconds(5.0f);
+
+        while (isVisible)
+            yield return new WaitForSeconds(0.1f);
+
+        Destroy(gameObject);
     }
 }

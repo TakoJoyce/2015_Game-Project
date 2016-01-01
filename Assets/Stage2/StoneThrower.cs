@@ -5,11 +5,18 @@ public class StoneThrower : MonoBehaviour {
 
     public GameObject stone;
     public Animator cameraAnim;
+    AudioSource vibrationSE;
 
     bool activated = false;
+    bool needToVibrate = true;
 
     float throwInterval = 3.5f;
     float stoneVelo = 0.0f;
+
+    void Awake()
+    {
+        vibrationSE = GetComponent<AudioSource>();
+    }
 
 	void Start()
     {
@@ -39,7 +46,12 @@ public class StoneThrower : MonoBehaviour {
     {
         if (coll.CompareTag("Player"))
         {
-            cameraAnim.SetTrigger("vibrate");
+            if (needToVibrate)
+            {
+                cameraAnim.SetTrigger("vibrate");
+                vibrationSE.Play();
+                needToVibrate = false;
+            }
             activated = true;
         }
     }
@@ -48,5 +60,11 @@ public class StoneThrower : MonoBehaviour {
     {
         if (coll.CompareTag("Player"))
             activated = false;
+    }
+
+    public void ResetStatus()
+    {
+        needToVibrate = true;
+        activated = false;
     }
 }

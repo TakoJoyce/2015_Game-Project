@@ -1,24 +1,27 @@
 ﻿using UnityEngine;
-using System.Collections;
 
-public class HugeStoneTrigger : MonoBehaviour {
+public class HugeStoneTrigger : MonoBehaviour
+{
 
     public GameObject hugeStone;
     public Animator cameraAnim;
     public Transform spawnPoint;
-    
+    AudioSource vibrationSE;
 
-	void OnTriggerEnter2D()
+    void Awake()
     {
-        cameraAnim.SetTrigger("zoomOut");
-        cameraAnim.SetTrigger("vibrate");
-        Invoke("CameraZoom", 8.0f);
-        Instantiate(hugeStone, spawnPoint.position, Quaternion.identity);
-        gameObject.SetActive(false);
+        vibrationSE = GetComponent<AudioSource>();
     }
 
-    void CameraZoom()
+    void OnTriggerEnter2D(Collider2D coll)
     {
-        cameraAnim.SetTrigger("toNormal");
+        if (coll.CompareTag("Player"))
+        {
+            cameraAnim.SetTrigger("zoomOut");
+            cameraAnim.SetTrigger("vibrate");
+            vibrationSE.Play();
+            Instantiate(hugeStone, spawnPoint.position, Quaternion.identity);
+            gameObject.GetComponent<Collider2D>().enabled = false;
+        }
     }
 }
